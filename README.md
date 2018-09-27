@@ -31,3 +31,18 @@ f.pyfunc_to_pyx(add5)
 ```
 This will generate a .pyx file which will have correctly typed Python code which can then be compiled with Cython's cythonize command. With no
 human re-writting of code. 
+```python3
+# Generated Cython code
+cpdef int add(int x, int y,):
+        return x + y
+
+cpdef int add4(list x,):
+        return sum(x)
+
+cpdef int add5(dict x,):
+        count = 0
+        for v in x.values():
+            count += v
+        return count
+
+```
