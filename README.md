@@ -26,6 +26,7 @@ def add5(x: Dict[str, int]) -> int:
 
 f = Func2Pyx('blah.pyx')
 f.pyfunc_to_pyx(add)
+f.pyfunc_to_pyx(add3)
 f.pyfunc_to_pyx(add4)
 f.pyfunc_to_pyx(add5)
 ```
@@ -36,6 +37,9 @@ human re-writting of code.
 cpdef int add(int x, int y,):
         return x + y
 
+cpdef int add3(int x, int y, z,):
+        return x + y + z
+
 cpdef int add4(list x,):
         return sum(x)
 
@@ -44,5 +48,6 @@ cpdef int add5(dict x,):
         for v in x.values():
             count += v
         return count
+
 
 ```
