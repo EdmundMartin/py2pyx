@@ -1,23 +1,30 @@
 import inspect
-from typing import List, Dict, Set, Any
+from typing import List, Dict, Set, Any, NewType
+
+
+Long = NewType('Long', int)
+Double = NewType('Double', float)
+LongDouble = NewType('LongDouble', float)
 
 
 class Func2Pyx:
 
     def __init__(self, output_file):
         self.output_file = output_file
-        self._mappings = {int: 'int', str: 'str', float: 'float'}
+        self._mappings = {int: 'int', str: 'str', float: 'float', set: 'set', list: 'list'}
 
     def _get_from_mapping(self, arg_type):
+        typing_types = [(List, 'list'), (Dict, 'dict'), (Set, 'set')]
+        c_types = {'Long': 'long', 'Double': 'double', 'LongDouble': 'long double', 'Dict': 'dict', 'List': 'list'}
         if arg_type not in self._mappings:
-            if issubclass(arg_type, List):
-                return 'list'
-            if issubclass(arg_type, Dict):
-                return 'dict'
-            if issubclass(arg_type, Set):
-                return 'set'
-            if issubclass(arg_type, Any):
+            if callable(arg_type):
+                arg_name = arg_type.__name__
+                if arg_name in c_types:
+                    return c_types[arg_name]
                 return ''
+            for t in typing_types:
+                if issubclass(arg_type, t[0]):
+                    return t[1]
             return ''
         return self._mappings.get(arg_type)
 
@@ -64,6 +71,7 @@ class Func2Pyx:
 
 
 if __name__ == '__main__':
+
     def add(x: int, y: int) -> int:
         return x + y
 
@@ -73,14 +81,18 @@ if __name__ == '__main__':
     def add4(x: List[int]) -> int:
         return sum(x)
 
-    def add5(x: Dict[str, int]) -> int:
+    def add5(x: Dict[str, int]) -> Long:
         count = 0
         for v in x.values():
             count += v
         return count
 
+    def add6(x: Dict) -> Long:
+        return 100
+
     f = Func2Pyx('blah.pyx')
     f.pyfunc_to_pyx(add)
-
+    f.pyfunc_to_pyx(add3)
     f.pyfunc_to_pyx(add4)
     f.pyfunc_to_pyx(add5)
+    f.pyfunc_to_pyx(add6)
