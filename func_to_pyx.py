@@ -1,5 +1,5 @@
 import inspect
-from typing import List, Dict, Set, Any, NewType
+from typing import List, Dict, Set, NewType
 
 
 Long = NewType('Long', int)
@@ -9,8 +9,8 @@ LongDouble = NewType('LongDouble', float)
 
 class Func2Pyx:
 
-    def __init__(self, output_file):
-        self.output_file = output_file
+    def __init__(self):
+        self.all_args = set()
         self._mappings = {int: 'int', str: 'str', float: 'float', set: 'set', list: 'list'}
 
     def _get_from_mapping(self, arg_type):
@@ -46,6 +46,7 @@ class Func2Pyx:
                 args.append('{} {},'.format(self._get_from_mapping(value), arg))
             else:
                 args.append('{},'.format(arg))
+            self.all_args.add(arg)
         if return_type:
             code += 'cpdef {return_type} {name}({args}):\n'.format(return_type=return_type, name=name,
                                                                         args=' '.join(args))
@@ -60,13 +61,13 @@ class Func2Pyx:
             code += '{}\n'.format(line)
         return code
 
-    def pyfunc_to_pyx(self, target):
+    def pyfunc_to_pyx(self, target, output_file):
         code = self._get_annotations(target)
         code = self._get_function_body(target, code)
-        self._save_file(code)
+        self._save_file(code, output_file)
 
-    def _save_file(self, code):
-        with open(self.output_file, 'a') as fp:
+    def _save_file(self, code, output_file):
+        with open(output_file, 'a') as fp:
             fp.write(code)
 
 
@@ -90,9 +91,9 @@ if __name__ == '__main__':
     def add6(x: Dict) -> Long:
         return 100
 
-    f = Func2Pyx('blah.pyx')
-    f.pyfunc_to_pyx(add)
-    f.pyfunc_to_pyx(add3)
-    f.pyfunc_to_pyx(add4)
-    f.pyfunc_to_pyx(add5)
-    f.pyfunc_to_pyx(add6)
+    f = Func2Pyx()
+    f.pyfunc_to_pyx(add, 'blah.pyx')
+    f.pyfunc_to_pyx(add3, 'blah.pyx')
+    f.pyfunc_to_pyx(add4, 'blah.pyx')
+    f.pyfunc_to_pyx(add5, 'blah.pyx')
+    f.pyfunc_to_pyx(add6, 'blah.pyx')
